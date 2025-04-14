@@ -1,0 +1,200 @@
+import React, { useState } from 'react';
+import {
+  Box,
+  Card,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  Paper,
+  Fade,
+  Grow,
+  Zoom,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(3),
+  background: 'linear-gradient(145deg, #ffffff, #f8f9fa)',
+  borderRadius: '16px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+  transition: 'all 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+  },
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    transition: 'all 0.2s ease-in-out',
+    '&:hover fieldset': {
+      borderColor: theme.palette.primary.main,
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: theme.palette.primary.main,
+      boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.1)',
+    },
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  padding: theme.spacing(1.2),
+  borderRadius: '8px',
+  textTransform: 'none',
+  fontWeight: 500,
+  fontSize: '1rem',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: '0 4px 8px rgba(25, 118, 210, 0.2)',
+  },
+}));
+
+const ResultPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: '8px',
+  background: 'linear-gradient(145deg, #f8f9fa, #ffffff)',
+  border: '1px solid rgba(0, 0, 0, 0.08)',
+  transition: 'all 0.2s ease-in-out',
+}));
+
+interface CalculatorToolProps {
+  title: string;
+  inputLabel: string;
+  outputLabel: string;
+  buttonText: string;
+  onCalculate: (input: string) => Promise<{ result: string; error: string }> | { result: string; error: string };
+  placeholder?: string;
+  multiline?: boolean;
+  rows?: number;
+}
+
+const CalculatorTool: React.FC<CalculatorToolProps> = ({
+  title,
+  inputLabel,
+  outputLabel,
+  buttonText,
+  onCalculate,
+  placeholder = '',
+  multiline = false,
+  rows = 1,
+}) => {
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
+  const [error, setError] = useState('');
+  const [showResult, setShowResult] = useState(false);
+
+  const handleCalculate = async () => {
+    setShowResult(false);
+    try {
+      const result = await onCalculate(input);
+      setOutput(result.result);
+      setError(result.error);
+      setShowResult(true);
+    } catch (err) {
+      setError('An unexpected error occurred');
+      setOutput('');
+      setShowResult(true);
+    }
+  };
+
+  return (
+    <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, px: 2 }}>
+      <Fade in timeout={600}>
+        <Typography 
+          variant="h4" 
+          component="h1" 
+          gutterBottom 
+          align="center"
+          sx={{ 
+            fontWeight: 500,
+            color: 'primary.main',
+            mb: 3,
+          }}
+        >
+          {title}
+        </Typography>
+      </Fade>
+      
+      <Grow in timeout={800}>
+        <StyledCard>
+          <StyledTextField
+            fullWidth
+            label={inputLabel}
+            variant="outlined"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={placeholder}
+            multiline={multiline}
+            rows={rows}
+          />
+
+          <StyledButton
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={handleCalculate}
+            sx={{ mb: 2 }}
+          >
+            {buttonText}
+          </StyledButton>
+
+          {error && (
+            <Zoom in timeout={300}>
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 2,
+                  borderRadius: '8px',
+                }}
+              >
+                {error}
+              </Alert>
+            </Zoom>
+          )}
+
+          {showResult && (
+            <Zoom in timeout={400}>
+              <ResultPaper elevation={0}>
+                <Typography 
+                  variant="subtitle1" 
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 500,
+                    color: 'text.secondary',
+                    mb: 1
+                  }}
+                >
+                  {outputLabel}
+                </Typography>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  value={output}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  placeholder="Result will appear here"
+                  multiline={multiline}
+                  rows={rows}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                      borderRadius: '8px',
+                    },
+                  }}
+                />
+              </ResultPaper>
+            </Zoom>
+          )}
+        </StyledCard>
+      </Grow>
+    </Box>
+  );
+};
+
+export default CalculatorTool; 
